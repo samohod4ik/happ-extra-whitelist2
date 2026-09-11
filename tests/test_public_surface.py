@@ -165,7 +165,7 @@ def main() -> None:
         fail("autoconnect.md: missing Field check section")
     if "field-verified" not in autoconnect_doc.lower():
         fail("autoconnect.md: missing field-verified logon nudge")
-    if "do not fire" not in autoconnect_doc.lower():
+    if not re.search(r"do\s+(\*\*)?not(\*\*)?\s+fire", autoconnect_doc, re.I):
         fail("autoconnect.md: must say do not fire happ://connect on a healthy live tunnel")
     if "ProxyEnable" not in autoconnect_doc:
         fail("autoconnect.md: must mention ProxyEnable as the live System Proxy example")
