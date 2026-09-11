@@ -2,7 +2,9 @@
 .SYNOPSIS
   Set Happ subscription auto-update interval to 60 minutes (Windows registry).
 .NOTES
-  Does not print or require subscription URLs. Soft — does not restart Happ.
+  Does not print or require subscription URLs. Soft — does not restart or kill Happ.
+  EN: Refresh interval only; not autostart and not autoconnect.
+  RU: Только интервал обновления подписки; это не автозапуск и не автоподключение.
 #>
 [CmdletBinding(SupportsShouldProcess = $true)]
 param(
