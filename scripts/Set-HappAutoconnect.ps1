@@ -7,18 +7,19 @@
   write subscription URLs or invent Preferences registry values.
 
   What it CAN set locally:
-  - A current-user Scheduled Task that soft-nudges happ://connect 30-60s
-    after logon, after Happ.exe --autostart has had time to come up.
+  - A current-user Scheduled Task that waits until Happ.exe is running,
+    then soft-nudges happ://connect 30-60s after logon (after --autostart).
   - Inspection of existing HKCU Happ Preference value *names* that already
     look like autoconnect (report only; no invented keys).
 
+  happ://connect is a local protocol nudge (not the vendor header API).
   Prefer lastused (last selected server). Prefer Extra Whitelist2 DE then NL
   when those remarks exist in the user's subscription.
 
 .NOTES
   EN: Never kills Happ; never calls happ://disconnect.
   RU: Никогда не убивает Happ и не вызывает happ://disconnect.
-  Docs: https://www.happ.su/main/dev-docs/app-management
+  Official autoconnect: https://www.happ.su/main/dev-docs/app-management
 #>
 [CmdletBinding(SupportsShouldProcess = $true)]
 param(
@@ -32,9 +33,9 @@ $ErrorActionPreference = 'Stop'
 
 function Write-OfficialAutoconnectGuidance {
   Write-Host @'
---- Happ autoconnect (official, subscription-side) ---
+--- Happ autoconnect ---
 EN: Autostart launches Happ. Autoconnect brings the tunnel up.
-    Provider delivery (do not commit URLs). Prefer lastused:
+    OFFICIAL (subscription provider; do not commit URLs). Prefer lastused:
       HTTP headers:
         subscription-autoconnect: 1
         subscription-autoconnect-type: lastused
@@ -45,6 +46,7 @@ EN: Autostart launches Happ. Autoconnect brings the tunnel up.
     Source: https://www.happ.su/main/dev-docs/app-management
     Local UI: if this Happ build shows Settings auto-connect /
     Автоподключение, enable it. No public registry value is documented.
+    LOCAL NUDGE (this script): happ://connect after Happ.exe is running.
     lastused = last selected server. Prefer Extra Whitelist2 DE then NL
     when those remarks exist.
 
@@ -52,6 +54,7 @@ RU: Автозапуск только открывает Happ. Автоподк�
     Официально задаёт провайдер подписки (URL в репозиторий не писать).
     Предпочтительно lastused. Локальный тумблер в Settings — если есть.
     Реестровых ключей автоподключения вендор не документирует.
+    Локальный nudge: happ://connect после старта Happ.exe.
     Extra Whitelist2 DE→NL — только если такие remark есть в подписке.
 ---
 '@
@@ -90,10 +93,21 @@ if ($InspectOnly) {
   return
 }
 
-$action = New-ScheduledTaskAction `
-  -Execute (Join-Path $env:SystemRoot 'System32\WindowsPowerShell\v1.0\powershell.exe') `
-  -Argument '-NoProfile -WindowStyle Hidden -Command "Start-Process ''happ://connect''"'
-$trigger = New-ScheduledTaskTrigger -AtLogOn
+# Wait until Happ.exe exists, then soft-connect. Never Stop-Process / disconnect.
+$nudgeScript = @'
+$deadline = (Get-Date).AddSeconds(90)
+do {
+  if (Get-Process Happ -ErrorAction SilentlyContinue) { break }
+  Start-Sleep -Seconds 2
+} while ((Get-Date) -lt $deadline)
+if (Get-Process Happ -ErrorAction SilentlyContinue) {
+  try { Start-Process "happ://connect" } catch { Write-Error $_ }
+}
+'@
+$encoded = [Convert]::ToBase64String([Text.Encoding]::Unicode.GetBytes($nudgeScript))
+$ps1 = Join-Path $env:SystemRoot 'System32\WindowsPowerShell\v1.0\powershell.exe'
+$action = New-ScheduledTaskAction -Execute $ps1 -Argument "-NoProfile -WindowStyle Hidden -EncodedCommand $encoded"
+$trigger = New-ScheduledTaskTrigger -AtLogOn -User $env:USERNAME
 $trigger.Delay = 'PT{0}S' -f $DelaySeconds
 $principal = New-ScheduledTaskPrincipal -UserId $env:USERNAME -LogonType Interactive -RunLevel Limited
 $settings = New-ScheduledTaskSettingsSet `
@@ -102,7 +116,7 @@ $settings = New-ScheduledTaskSettingsSet `
   -StartWhenAvailable `
   -MultipleInstances IgnoreNew
 
-if ($PSCmdlet.ShouldProcess($TaskName, "Register delayed happ://connect (+${DelaySeconds}s after logon)")) {
+if ($PSCmdlet.ShouldProcess($TaskName, "Register delayed happ://connect (+${DelaySeconds}s after logon, after Happ.exe)")) {
   Register-ScheduledTask -TaskName $TaskName -Action $action -Trigger $trigger -Principal $principal -Settings $settings -Force | Out-Null
-  Write-Host "OK: Scheduled Task '$TaskName' → happ://connect after ${DelaySeconds}s (soft; does not kill Happ)"
+  Write-Host "OK: Scheduled Task '$TaskName' → wait for Happ.exe then happ://connect after ${DelaySeconds}s (soft; does not kill Happ)"
 }

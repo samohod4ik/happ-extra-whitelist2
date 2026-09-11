@@ -7,15 +7,15 @@ Internet
         → Selected outbound: last used server; prefer Extra Whitelist2 DE then NL when those remarks exist
 ```
 
-Applies to any **Windows** PC where Happ is the primary proxy client.
+Applies to any **Windows** PC where Happ is the **primary** proxy client. Alternate path (Cursor-only, OS direct): [variant-throne-cursor-only.md](variant-throne-cursor-only.md).
 
 | Layer | Role |
 |-------|------|
-| Happ | Primary Windows client (FlyFrog). **Autostart** = `Happ.exe --autostart` (launch). **Autoconnect** = official `lastused` + optional delayed `happ://connect`. |
+| Happ | Primary Windows client (FlyFrog). **Autostart** = `Happ.exe --autostart` (launch). **Autoconnect (official)** = provider `lastused`. **Autoconnect (local)** = delayed `happ://connect` after Happ.exe. |
 | Routing JSON | `%LOCALAPPDATA%\Happ\routing.json` — `useRouting`, `activeRoutingName`, `routings[]`. |
 | Geo assets | Often under `%LOCALAPPDATA%\Happ\routing\0\<ProfileName>\` (`geoip.dat`, `geosite.dat`). |
-| Subscription | Opaque in Happ; refresh interval via HKCU registry (minutes on Windows builds). Autoconnect flags are **subscription-delivered**, not a documented registry value. |
-| Other clients | Optional spare — leave their proxy/TUN off while Happ owns the path. |
+| Subscription | Opaque in Happ; refresh interval via HKCU registry (minutes on Windows builds). Official autoconnect flags are **subscription-delivered**, not a documented registry value. |
+| Throne / other clients | Spare only while Happ is primary — their System Proxy and TUN **off**. Never dual System Proxy. |
 
 ## Autostart vs autoconnect
 
@@ -23,7 +23,7 @@ Applies to any **Windows** PC where Happ is the primary proxy client.
 |-----------|----------------|---------------------|
 | Scheduled Task `Happ.exe --autostart` | Starts Happ at logon (often minimized) | Does not guarantee TUN/proxy up |
 | `subscription-autoconnect` + `lastused` | Official auto-connect on app launch | Requires provider headers/body (no URLs in this repo) |
-| Delayed `happ://connect` | Soft local nudge 30–60s after logon | Does not kill Happ; not `happ://disconnect` |
+| Delayed `happ://connect` | Local protocol nudge after Happ.exe is running (30–60s after logon) | Not the vendor header API; does not kill Happ; not `happ://disconnect` |
 
 Vendor `app-auto-start` is Android-only in [official docs](https://www.happ.su/main/dev-docs/app-management).
 
@@ -44,4 +44,4 @@ Official docs sometimes describe intervals in hours; observed Windows builds hon
 
 ## Русский
 
-Слои те же на любом Windows ПК. Автозапуск только поднимает процесс; автоподключение — отдельно (`lastused` от провайдера и/или мягкий `happ://connect`). Реестр здесь — интервал обновления подписки, не автоподключение. Extra Whitelist2 DE/NL — если такие серверы есть в подписке пользователя.
+Слои те же на любом Windows ПК, если выбран вариант Happ. Автозапуск только поднимает процесс; официальное автоподключение — `lastused` от провайдера; локальный nudge — `happ://connect` после Happ.exe. Реестр здесь — интервал обновления подписки. Extra Whitelist2 DE/NL — если такие серверы есть. Throne на этой машине — spare, без своего System Proxy.

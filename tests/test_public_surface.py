@@ -62,7 +62,9 @@ def main() -> None:
         ROOT / "scripts" / "Invoke-HappSoftOpen.ps1",
         ROOT / "docs" / "autoconnect.md",
         ROOT / "docs" / "install-pipeline.md",
+        ROOT / "docs" / "variant-throne-cursor-only.md",
         ROOT / "skills" / "happ-extra-whitelist2" / "SKILL.md",
+        ROOT / "skills" / "throne-cursor-only-public" / "README.md",
         ROOT / "SECURITY.md",
         ROOT / "README.md",
     ]
@@ -133,6 +135,24 @@ def main() -> None:
         fail("Install-HappAutostart.ps1 should wire the autoconnect nudge")
     if "Autoconnect" not in verify and "autoconnect" not in verify:
         fail("Verify-HappExtraWhitelist2.ps1 must check the autoconnect nudge")
+    if "SkipAutoconnectCheck" not in verify:
+        fail("Verify-HappExtraWhitelist2.ps1 must allow -SkipAutoconnectCheck")
+    if "Get-Process Happ" not in set_ac:
+        fail("Set-HappAutoconnect.ps1 must wait for Happ.exe before happ://connect")
+
+    readme = read(ROOT / "README.md")
+    variant = read(ROOT / "docs" / "variant-throne-cursor-only.md")
+    if "Throne Cursor-only" not in readme or "Happ" not in readme:
+        fail("README.md must list Happ and Throne Cursor-only variants")
+    if "System Proxy" not in variant or "Cursor.exe" not in variant:
+        fail("variant-throne-cursor-only.md must contrast Cursor-only vs full-proxy")
+    if not re.search(r"Never.*System Proxy|не включать System Proxy", skill, re.I):
+        fail("SKILL.md must forbid dual Happ+Throne System Proxy")
+    ru = skill.split("Русский", 1)[-1]
+    if "Watch" not in ru:
+        fail("SKILL.md RU section must include Watch")
+    if "local" not in autoconnect_doc.lower() or "official" not in autoconnect_doc.lower():
+        fail("autoconnect.md must separate official headers from local happ://connect")
 
     print("PASS public surface gates")
 

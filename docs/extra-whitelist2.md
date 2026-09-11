@@ -7,7 +7,7 @@ Remarks are **subscription-specific**. Do not assume Extra Whitelist2 or DE/NL n
 ## Selection policy (when those remarks exist)
 
 1. Filter servers whose remark/title contains `Extra Whitelist2` (exact phrase; do not use plain `Extra Whitelist` without `2`).
-2. Prefer **Germany** (`Германия`, `Germany`, `DE`; informal `GE`) among those.
+2. Prefer **Germany** (`Германия`, `Germany`, `DE`) among those. Treat informal `GE` as Germany only when the remark clearly means Germany, not Georgia.
 3. Else prefer **Netherlands** (`Нидерланды`, `Netherlands`, `NL`).
 4. Other Extra Whitelist2 countries (for example FI/SE/LT) are fallbacks only if DE/NL are missing or unhealthy.
 5. If no Extra Whitelist2 remarks exist, leave the user's current / `lastused` server; do not invent labels.

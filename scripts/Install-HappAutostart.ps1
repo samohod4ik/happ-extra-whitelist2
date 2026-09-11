@@ -6,13 +6,14 @@
   It does not by itself bring the VPN/TUN up.
 
   By default this script also registers the delayed happ://connect nudge
-  via Set-HappAutoconnect.ps1 (30-60s after logon). Pass
+  via Set-HappAutoconnect.ps1 (30-60s after logon, after Happ.exe). Pass
   -SkipAutoconnectNudge to install launch-only.
 
 .NOTES
   EN: Discovers Happ.exe; does not assume a single install path.
   RU: Ищет Happ.exe; один фиксированный путь не обязателен.
   Never kills Happ; never calls happ://disconnect.
+  Do not run this on a Throne Cursor-only machine (no second System Proxy).
 #>
 [CmdletBinding(SupportsShouldProcess = $true)]
 param(
@@ -38,7 +39,7 @@ if (-not $HappExe -or -not (Test-Path $HappExe)) {
 }
 
 $action = New-ScheduledTaskAction -Execute $HappExe -Argument '--autostart'
-$trigger = New-ScheduledTaskTrigger -AtLogOn
+$trigger = New-ScheduledTaskTrigger -AtLogOn -User $env:USERNAME
 $principal = New-ScheduledTaskPrincipal -UserId $env:USERNAME -LogonType Interactive -RunLevel Limited
 $settings = New-ScheduledTaskSettingsSet -AllowStartIfOnBatteries -DontStopIfGoingOnBatteries -StartWhenAvailable
 
@@ -54,5 +55,7 @@ if (-not $SkipAutoconnectNudge) {
   }
   $child = @{ DelaySeconds = $AutoconnectDelaySeconds }
   if ($WhatIfPreference) { $child['WhatIf'] = $true }
-  & $nudge @child
+  if ($WhatIfPreference -or $PSCmdlet.ShouldProcess('Happ Proxy Autoconnect Nudge', 'Register delayed happ://connect after Happ.exe')) {
+    & $nudge @child
+  }
 }
