@@ -7,10 +7,17 @@
   write subscription URLs or invent Preferences registry values.
 
   What it CAN set locally:
-  - A current-user Scheduled Task that waits until Happ.exe is running,
-    then soft-nudges happ://connect 30-60s after logon (after --autostart).
-  - Inspection of existing HKCU Happ Preference value *names* that already
-    look like autoconnect (report only; no invented keys).
+    - A current-user Scheduled Task that waits until Happ.exe is running,
+      then soft-nudges happ://connect 30-60s after logon (after --autostart).
+    - Inspection of existing HKCU Happ Preference value *names* that already
+      look like autoconnect (report only; no invented keys).
+
+  Live-session soft-apply: if Happ is already running and System Proxy is
+  already on (ProxyEnable=1) to a Happ-like local listen, do not fire
+  immediate happ://connect just to "apply" autoconnect. This script only
+  registers the delayed logon nudge; skip immediate connect on a healthy
+  live tunnel (avoids remote-session blips). Confirm the nudge after
+  reboot or a fresh logon.
 
   happ://connect is a local protocol nudge (not the vendor header API).
   Prefer lastused (last selected server). Prefer Extra Whitelist2 DE then NL
@@ -46,7 +53,9 @@ EN: Autostart launches Happ. Autoconnect brings the tunnel up.
     Source: https://www.happ.su/main/dev-docs/app-management
     Local UI: if this Happ build shows Settings auto-connect /
     Автоподключение, enable it. No public registry value is documented.
-    LOCAL NUDGE (this script): happ://connect after Happ.exe is running.
+    LOCAL NUDGE (this script): delayed happ://connect after Happ.exe.
+    Live session already healthy (ProxyEnable + Happ-like local proxy):
+    do not fire immediate happ://connect; only ensure this logon task.
     lastused = last selected server. Prefer Extra Whitelist2 DE then NL
     when those remarks exist.
 
@@ -55,6 +64,7 @@ RU: Автозапуск только открывает Happ. Автоподк�
     Предпочтительно lastused. Локальный тумблер в Settings — если есть.
     Реестровых ключей автоподключения вендор не документирует.
     Локальный nudge: happ://connect после старта Happ.exe.
+    Живая сессия уже с System Proxy Happ — не вызывать connect сразу.
     Extra Whitelist2 DE→NL — только если такие remark есть в подписке.
 ---
 '@
@@ -81,12 +91,36 @@ function Show-ExistingAutoconnectPreferenceNames {
   }
   if ($found -eq 0) {
     Write-Host 'NOTE: no existing HKCU Happ Preference names matched autoconnect/lastused.'
-    Write-Host 'NOTE: not creating invented registry values.'
+    Write-Host 'NOTE: not creating invented registry values. Official lastused is provider-only.'
   }
+}
+
+function Show-LiveSessionSoftApplyGuidance {
+  $happUp = [bool](Get-Process Happ -ErrorAction SilentlyContinue)
+  $inet = 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Internet Settings'
+  $enabled = $false
+  $server = ''
+  if (Test-Path $inet) {
+    $item = Get-ItemProperty -LiteralPath $inet
+    if ($null -ne $item.ProxyEnable) { $enabled = [int]$item.ProxyEnable -eq 1 }
+    $server = [string]$item.ProxyServer
+  }
+  $looksLocal = $server -match '(?i)(127\.0\.0\.1|localhost):\d+'
+  if ($happUp -and $enabled -and $looksLocal) {
+    Write-Host 'NOTE: live session looks healthy (Happ running; ProxyEnable=1; Happ-like local proxy).'
+    Write-Host 'NOTE: do not fire immediate happ://connect to apply autoconnect; only ensure this delayed logon nudge.'
+    return
+  }
+  if ($happUp -and $enabled) {
+    Write-Host 'NOTE: Happ is running and ProxyEnable is on, but ProxyServer is not a local Happ-like listen; not treating as a healthy Happ tunnel.'
+    return
+  }
+  Write-Host 'NOTE: live session does not look like an already-up Happ System Proxy; still only scheduling the logon nudge (no immediate connect).'
 }
 
 Write-OfficialAutoconnectGuidance
 Show-ExistingAutoconnectPreferenceNames
+Show-LiveSessionSoftApplyGuidance
 
 if ($InspectOnly) {
   Write-Host 'OK: inspect-only (no Scheduled Task change).'

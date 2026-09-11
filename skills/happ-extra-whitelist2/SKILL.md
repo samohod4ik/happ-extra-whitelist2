@@ -33,7 +33,7 @@ Portable public skill. Scope is **Windows** (any PC), not a single host or lapto
 |---|-----------|------------------------|---------------------------|
 | Does | Starts Happ at logon (`Happ.exe --autostart`) | Brings TUN / System Proxy up on launch | Soft `happ://connect` after Happ.exe is running |
 | Source | Windows Scheduled Task (vendor `app-auto-start` is Android-only) | `subscription-autoconnect` + `subscription-autoconnect-type: lastused` | Protocol handler; not the vendor header API |
-| Local | Discover `Happ.exe`; register the task | Settings toggle if present | Delayed task 30–60s; Watch if TUN down |
+| Local | Discover `Happ.exe`; register the task | Settings toggle if present | Delayed task 30–60s; Watch if TUN down. Live session already tunneled: register the nudge only — do not fire `happ://connect` just to apply. Field-check after reboot/logon. |
 | Docs | [install-pipeline.md](../../docs/install-pipeline.md) | [autoconnect.md](../../docs/autoconnect.md) | same |
 
 Prefer **lastused** (last selected server). Prefer Extra Whitelist2 DE then NL **when those remarks exist**.
@@ -55,7 +55,7 @@ Prefer **lastused** (last selected server). Prefer Extra Whitelist2 DE then NL *
 5. `scripts/Set-HappSubscriptionRefresh.ps1` → 60.
 6. `scripts/Install-HappAutostart.ps1` (launch task + delayed connect nudge).
 7. Ask the subscription provider for `subscription-autoconnect: 1` + `subscription-autoconnect-type: lastused` (headers or `#` body lines). Enable the Settings auto-connect toggle **if present**.
-8. `scripts/Invoke-HappSoftOpen.ps1` and/or `scripts/Invoke-HappSoftConnect.ps1`.
+8. `scripts/Invoke-HappSoftOpen.ps1` to focus. Use `scripts/Invoke-HappSoftConnect.ps1` only if the tunnel is down. Live session already up: skip connect; field-check the logon nudge after reboot.
 9. Confirm Throne System Proxy/TUN are **off**.
 10. `scripts/Verify-HappExtraWhitelist2.ps1` — all checks green or document gaps.
 
@@ -67,6 +67,8 @@ If the Happ **process** is running but TUN / System Proxy is down:
 2. Do **not** kill `Happ.exe`. Do **not** `happ://disconnect`.
 3. If still down after a short wait, `happ://open` and inspect the UI; re-check provider autoconnect / lastused.
 4. Only after the tunnel is up, verify routing + (if present) Extra Whitelist2 DE/NL.
+
+If the live session is already tunneled, skip connect. Field-check the delayed logon nudge after reboot.
 
 ## Success criteria
 
@@ -96,7 +98,7 @@ If the Happ **process** is running but TUN / System Proxy is down:
 
 ### Автозапуск ≠ автоподключение
 
-`--autostart` только запускает Happ. Официальный туннель: `subscription-autoconnect` + `lastused` (провайдер). Локальный nudge: `happ://connect` после старта процесса (не вендорный header API).
+`--autostart` только запускает Happ. Официальный туннель: `subscription-autoconnect` + `lastused` (провайдер). Локальный nudge: `happ://connect` после старта процесса (не вендорный header API). Живая сессия уже с туннелем: только зарегистрировать nudge, не вызывать connect «чтобы применить»; проверку — после перезагрузки/входа.
 
 ### Жёсткие правила
 
@@ -108,7 +110,7 @@ If the Happ **process** is running but TUN / System Proxy is down:
 
 ### Watch
 
-Процесс есть, TUN/прокси нет → мягкий `happ://connect`. Не убивать Happ.
+Процесс есть, TUN/прокси нет → мягкий `happ://connect`. Живая сессия уже с туннелем — connect не вызывать. Не убивать Happ.
 
 ### Успех
 

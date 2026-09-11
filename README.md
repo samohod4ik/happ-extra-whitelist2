@@ -39,7 +39,7 @@ Placeholders only. **Never** commit subscription URLs or tokens.
 4. If Extra Whitelist2 remarks exist, prefer Germany then Netherlands — [docs/extra-whitelist2.md](docs/extra-whitelist2.md).
 5. Run `scripts/Set-HappSubscriptionRefresh.ps1` (60 minutes).
 6. Run `scripts/Install-HappAutostart.ps1` (autostart **and** delayed autoconnect nudge).
-7. Prefer provider `subscription-autoconnect-type: lastused`. Local nudge: `scripts/Invoke-HappSoftConnect.ps1` (`happ://connect`). Focus only: `scripts/Invoke-HappSoftOpen.ps1` (`happ://open`). Never disconnect/kill while a remote session depends on the tunnel.
+7. Prefer provider `subscription-autoconnect-type: lastused`. Local nudge: `scripts/Set-HappAutoconnect.ps1` (delayed logon task). Live session already tunneled: do not fire `happ://connect` just to apply — field-check after reboot/logon. Soft connect now (`scripts/Invoke-HappSoftConnect.ps1`) only if the tunnel is down. Focus only: `scripts/Invoke-HappSoftOpen.ps1` (`happ://open`). Never disconnect/kill while a remote session depends on the tunnel.
 8. Verify: `scripts/Verify-HappExtraWhitelist2.ps1`.
 
 ## Docs
@@ -58,9 +58,9 @@ Placeholders only. **Never** commit subscription URLs or tokens.
 |--------|---------|
 | `Set-HappSubscriptionRefresh.ps1` | Registry: 60m auto-update |
 | `Install-HappAutostart.ps1` | Task → `Happ.exe --autostart` + delayed connect nudge |
-| `Set-HappAutoconnect.ps1` | Official lastused guidance + delayed `happ://connect` after Happ.exe |
+| `Set-HappAutoconnect.ps1` | Official lastused guidance + delayed logon `happ://connect` nudge (no immediate connect on a healthy live session) |
 | `Invoke-HappSoftOpen.ps1` | `happ://open` (focus) |
-| `Invoke-HappSoftConnect.ps1` | `happ://connect` (local tunnel nudge; no kill) |
+| `Invoke-HappSoftConnect.ps1` | `happ://connect` if the tunnel is down (optional/skip when already healthy; no kill) |
 | `Get-HappRoutingNames.ps1` | RO: `activeRoutingName` + profile names |
 | `Verify-HappExtraWhitelist2.ps1` | Smoke checks (no secrets printed) |
 
@@ -77,4 +77,4 @@ MIT — see [LICENSE](LICENSE).
 1. **Happ** — весь ОС через Happ (WHITELIST, Extra Whitelist2 DE→NL если remark есть, `--autostart` + автоподключение `lastused`).
 2. **Throne Cursor-only** — в VPN только Cursor.exe и cursor-agent; остальная ОС напрямую. См. [variant-throne-cursor-only.md](docs/variant-throne-cursor-only.md) и `skills/throne-cursor-only-public/`.
 
-Автозапуск ≠ автоподключение. Официальный `lastused` задаёт провайдер; локальный nudge — `happ://connect` после старта Happ.exe. Профиля `WHITELIST2` нет. URL подписки не класть. Не убивать Happ, пока от туннеля зависит удалённый доступ. Не включать System Proxy Happ и Throne вместе.
+Автозапуск ≠ автоподключение. Официальный `lastused` задаёт провайдер; локальный nudge — `happ://connect` после старта Happ.exe. На живой сессии, если туннель уже поднят, connect не вызывать «чтобы применить» — проверить nudge после перезагрузки. Профиля `WHITELIST2` нет. URL подписки не класть. Не убивать Happ, пока от туннеля зависит удалённый доступ. Не включать System Proxy Happ и Throne вместе.

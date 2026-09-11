@@ -35,9 +35,27 @@ Local options without a subscription provider:
 ```powershell
 .\scripts\Install-HappAutostart.ps1          # --autostart + delayed connect nudge
 .\scripts\Set-HappAutoconnect.ps1            # nudge only (or -InspectOnly)
-.\scripts\Invoke-HappSoftConnect.ps1         # happ://connect now
+.\scripts\Invoke-HappSoftConnect.ps1         # happ://connect now (skip if tunnel already healthy)
 .\scripts\Verify-HappExtraWhitelist2.ps1     # -SkipAutoconnectCheck if nudge was skipped
 ```
+
+## Apply on a live Windows session
+
+If Happ is already running **and** System Proxy / TUN is already up (example: WinINET `ProxyEnable=1` → `127.0.0.1:10809`):
+
+- Do **not** fire `happ://connect` just to "apply" autoconnect.
+- Only register / ensure the delayed logon nudge (`Set-HappAutoconnect.ps1`). That script schedules the task; it does not write Happ Preferences and does not need an immediate connect.
+- Firing connect on a healthy live tunnel is unnecessary and can blip remote sessions that depend on the proxy.
+
+`-InspectOnly` on a real Windows Happ install has been seen to report **zero** HKCU Happ Preference value names matching autoconnect/lastused. That is expected. Never invent registry keys. Official `lastused` is subscription-provider only. The local path is the Settings UI toggle (if present) plus the scheduled `happ://connect` nudge.
+
+## Field check
+
+The delayed current-user Scheduled Task `Happ Proxy Autoconnect Nudge` (default ~45s after logon, wait until `Happ.exe` exists, then `happ://connect`) is a **field-verified** soft fallback when provider autoconnect headers are unavailable. Confirm it after a reboot or a fresh logon — not by firing connect on an already-healthy live session. It is not a substitute for official provider `lastused`.
+
+## Competing WinDivert / TUN hijacks
+
+Other WinDivert-based tools (for example Discord/YouTube bypass packs that install a `zapret`-style service) can coexist badly with Happ. Disable or remove competing WinDivert / TUN hijacks before relying on Happ autoconnect.
 
 ## Hard rule
 
@@ -49,4 +67,10 @@ Never kill Happ and never call `happ://disconnect` when remote access depends on
 
 **Автозапуск** только открывает Happ. **Автоподключение** поднимает туннель. После перезагрузки `Happ.exe --autostart` может оставить Happ свёрнутым без VPN.
 
-Официально автоподключение задаёт провайдер подписки (`lastused` предпочтителен). URL подписки в репозиторий не писать. Локально: тумблер в Settings, если есть; отложенный `happ://connect` после старта Happ.exe (через 30–60 с после входа). Это локальный protocol nudge, не header API вендора. Если процесс есть, а TUN/прокси нет — мягкий `happ://connect`. Не убивать Happ и не вызывать `happ://disconnect`. Не включать System Proxy Happ и Throne вместе.
+Официально автоподключение задаёт провайдер подписки (`lastused` предпочтителен). URL подписки в репозиторий не писать. Локально: тумблер в Settings, если есть; отложенный `happ://connect` после старта Happ.exe (через 30–60 с после входа). Это локальный protocol nudge, не header API вендора.
+
+На уже работающей сессии, если Happ запущен и System Proxy/TUN уже поднят (`ProxyEnable=1` → локальный Happ, например `127.0.0.1:10809`), **не** вызывать `happ://connect` «чтобы применить» автоподключение: только задача `Happ Proxy Autoconnect Nudge`. На здоровом живом туннеле connect не нужен и может моргнуть удалённую сессию. `-InspectOnly` может показать ноль имён Preferences autoconnect/lastused — ключи не выдумывать.
+
+Полевая проверка: отложенный nudge после перезагрузки или нового входа (мягкий fallback, не замена официальному lastused). Конкурирующие WinDivert/TUN-перехваты (в т.ч. обходы в стиле zapret) лучше снять до опоры на автоподключение Happ.
+
+Если процесс есть, а TUN/прокси нет — мягкий `happ://connect`. Не убивать Happ и не вызывать `happ://disconnect`. Не включать System Proxy Happ и Throne вместе.
