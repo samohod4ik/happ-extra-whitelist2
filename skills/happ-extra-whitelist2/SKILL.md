@@ -110,7 +110,7 @@ If the live session is already tunneled, skip connect. Field-check the delayed l
 
 ### Watch
 
-Процесс есть, TUN/прокси нет → мягкий `happ://connect`. Живая сессия уже с туннелем — connect не вызывать. Не убивать Happ.
+Процесс есть, TUN/прокси нет → мягкий `happ://connect` (`-Force`, если WinINET ещё выглядит поднятым). Живая сессия уже с туннелем — connect не вызывать. Не убивать Happ.
 
 ### Успех
 

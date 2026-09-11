@@ -15,7 +15,7 @@ Ordered steps for a clean **Windows** Happ full-proxy install (desktop, laptop, 
 
 ## Watch
 
-If the Happ **process** is running but TUN / System Proxy is down: soft `happ://connect` (`Invoke-HappSoftConnect.ps1`). If the live session is already tunneled, skip connect and field-check the logon nudge after reboot. Do **not** kill Happ. Do **not** call `happ://disconnect` while a remote session depends on the tunnel.
+If the Happ **process** is running but TUN / System Proxy is down: soft `happ://connect` (`Invoke-HappSoftConnect.ps1`; `-Force` if WinINET still looks up). If the live session is already tunneled, skip connect and field-check the logon nudge after reboot. Do **not** kill Happ. Do **not** call `happ://disconnect` while a remote session depends on the tunnel.
 
 ## Failure modes
 
