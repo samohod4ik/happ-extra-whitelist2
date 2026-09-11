@@ -2,7 +2,9 @@
 .SYNOPSIS
   Read-only: print activeRoutingName, useRouting, and routing profile names.
 .NOTES
-  Never prints subscription URLs.
+  Never prints subscription URLs. Does not kill Happ.
+  EN: Routing names only — not Extra Whitelist2 server remarks (those live in the subscription).
+  RU: Только имена профилей маршрутизации; remark серверов не читаются.
 #>
 [CmdletBinding()]
 param()

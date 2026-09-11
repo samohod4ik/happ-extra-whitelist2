@@ -1,11 +1,20 @@
 <#
 .SYNOPSIS
   Smoke-verify Happ Extra Whitelist2 setup without printing secrets.
+.DESCRIPTION
+  Checks process, subscription-refresh registry, autostart task, delayed
+  autoconnect nudge task, and routing.json. Does not assume Extra Whitelist2
+  DE/NL remarks exist (those are UI-side when present). Never prints URLs.
+
+  Pass -SkipAutoconnectCheck when Install-HappAutostart.ps1 was run with
+  -SkipAutoconnectNudge.
 #>
 [CmdletBinding()]
 param(
   [int] $ExpectedMinutes = 60,
-  [string] $TaskName = 'Happ Proxy Autostart'
+  [string] $TaskName = 'Happ Proxy Autostart',
+  [string] $AutoconnectTaskName = 'Happ Proxy Autoconnect Nudge',
+  [switch] $SkipAutoconnectCheck
 )
 
 $ErrorActionPreference = 'Continue'
@@ -26,7 +35,14 @@ if (Test-Path $reg) {
 } else { Bad "registry missing: $reg" }
 
 $task = Get-ScheduledTask -TaskName $TaskName -ErrorAction SilentlyContinue
-if ($task) { Ok "autostart task '$TaskName' present" } else { Bad "autostart task '$TaskName' missing" }
+if ($task) { Ok "autostart task '$TaskName' present (launch only)" } else { Bad "autostart task '$TaskName' missing" }
+
+if ($SkipAutoconnectCheck) {
+  Ok "autoconnect nudge check skipped (-SkipAutoconnectCheck)"
+} else {
+  $ac = Get-ScheduledTask -TaskName $AutoconnectTaskName -ErrorAction SilentlyContinue
+  if ($ac) { Ok "autoconnect nudge task '$AutoconnectTaskName' present (happ://connect)" } else { Bad "autoconnect nudge task '$AutoconnectTaskName' missing" }
+}
 
 $rj = Join-Path $env:LOCALAPPDATA 'Happ\routing.json'
 if (Test-Path $rj) {
@@ -36,5 +52,7 @@ if (Test-Path $rj) {
   Ok ("routing profiles: " + ($(if ($names.Count) { $names -join ', ' } else { '(none)' })))
 } else { Bad 'routing.json missing' }
 
-Write-Host 'NOTE: Extra Whitelist2 DE/NL selection is UI-side; this script does not read encrypted subs.db.'
+Write-Host 'NOTE: Extra Whitelist2 DE/NL is a preference when those remarks exist; this script does not read encrypted subs.db.'
+Write-Host 'NOTE: autostart ≠ autoconnect. If Happ is up but TUN/proxy is down, soft happ://connect — do not kill Happ.'
+Write-Host 'NOTE: do not enable Throne System Proxy beside Happ System Proxy.'
 if ($fail -gt 0) { Write-Host "RESULT: $fail failure(s)"; exit 1 } else { Write-Host 'RESULT: OK'; exit 0 }
