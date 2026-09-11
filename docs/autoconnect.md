@@ -30,12 +30,12 @@ Local options without a subscription provider:
 
 1. **UI toggle** — if the installed build shows Settings **Auto-connect** / **Автоподключение**, enable it.
 2. **Soft scheduled nudge** — current-user task waits until `Happ.exe` is running, then `happ://connect` **30–60s after logon** (default 45s). Local protocol nudge, not the vendor header API. Does not kill Happ.
-3. **Watch** — if `Happ.exe` is running but TUN / System Proxy is down, run `scripts/Invoke-HappSoftConnect.ps1`. Never `happ://disconnect` or `Stop-Process` while a remote session depends on the tunnel.
+3. **Watch** — if `Happ.exe` is running but TUN / System Proxy is down, run `scripts/Invoke-HappSoftConnect.ps1`. The script skips by default when WinINET already looks like a Happ local proxy (`ProxyEnable=1`); that is not a TUN check — pass `-Force` if the tunnel is actually down. Never `happ://disconnect` or `Stop-Process` while a remote session depends on the tunnel.
 
 ```powershell
 .\scripts\Install-HappAutostart.ps1          # --autostart + delayed connect nudge
 .\scripts\Set-HappAutoconnect.ps1            # nudge only (or -InspectOnly)
-.\scripts\Invoke-HappSoftConnect.ps1         # happ://connect now (skip if tunnel already healthy)
+.\scripts\Invoke-HappSoftConnect.ps1         # happ://connect now (skip if WinINET looks up; -Force to fire)
 .\scripts\Verify-HappExtraWhitelist2.ps1     # -SkipAutoconnectCheck if nudge was skipped
 ```
 

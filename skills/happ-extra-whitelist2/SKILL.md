@@ -63,7 +63,7 @@ Prefer **lastused** (last selected server). Prefer Extra Whitelist2 DE then NL *
 
 If the Happ **process** is running but TUN / System Proxy is down:
 
-1. Soft `happ://connect` (`scripts/Invoke-HappSoftConnect.ps1`).
+1. Soft `happ://connect` (`scripts/Invoke-HappSoftConnect.ps1`; add `-Force` if WinINET still looks up but the tunnel is down).
 2. Do **not** kill `Happ.exe`. Do **not** `happ://disconnect`.
 3. If still down after a short wait, `happ://open` and inspect the UI; re-check provider autoconnect / lastused.
 4. Only after the tunnel is up, verify routing + (if present) Extra Whitelist2 DE/NL.

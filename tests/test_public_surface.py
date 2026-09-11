@@ -183,11 +183,13 @@ def main() -> None:
         fail("Invoke-HappSoftConnect.ps1 must warn that connect is optional when the tunnel is already healthy")
     if "already healthy" not in soft_c.lower() and "already up" not in soft_c.lower():
         fail("Invoke-HappSoftConnect.ps1 must warn when the tunnel already looks up")
+    if "-Force" not in soft_c:
+        fail("Invoke-HappSoftConnect.ps1 must offer -Force when the operator knows the tunnel is down")
 
     if "live session" not in skill.lower():
         fail("SKILL.md: missing live-session apply pointer")
-    if "reboot" not in skill.lower() and "logon" not in skill.lower():
-        fail("SKILL.md: missing reboot/logon field-check pointer")
+    if "field-check" not in skill.lower() and "already tunneled" not in skill.lower():
+        fail("SKILL.md: missing live-session vs reboot field-check pointer")
     if "live session" not in readme.lower():
         fail("README.md: missing live-session apply pointer")
     ru_readme = readme.split("Русский", 1)[-1]

@@ -60,7 +60,7 @@ Placeholders only. **Never** commit subscription URLs or tokens.
 | `Install-HappAutostart.ps1` | Task → `Happ.exe --autostart` + delayed connect nudge |
 | `Set-HappAutoconnect.ps1` | Official lastused guidance + delayed logon `happ://connect` nudge (no immediate connect on a healthy live session) |
 | `Invoke-HappSoftOpen.ps1` | `happ://open` (focus) |
-| `Invoke-HappSoftConnect.ps1` | `happ://connect` if the tunnel is down (optional/skip when already healthy; no kill) |
+| `Invoke-HappSoftConnect.ps1` | `happ://connect` if the tunnel is down (WinINET skip when already healthy; `-Force` to fire; no kill) |
 | `Get-HappRoutingNames.ps1` | RO: `activeRoutingName` + profile names |
 | `Verify-HappExtraWhitelist2.ps1` | Smoke checks (no secrets printed) |
 

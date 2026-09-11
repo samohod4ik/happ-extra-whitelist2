@@ -96,13 +96,14 @@ function Show-ExistingAutoconnectPreferenceNames {
 }
 
 function Show-LiveSessionSoftApplyGuidance {
+  # Advisory only. Must not throw: this script's job is the delayed task.
   $happUp = [bool](Get-Process Happ -ErrorAction SilentlyContinue)
   $inet = 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Internet Settings'
+  $item = Get-ItemProperty -LiteralPath $inet -ErrorAction SilentlyContinue
   $enabled = $false
   $server = ''
-  if (Test-Path $inet) {
-    $item = Get-ItemProperty -LiteralPath $inet
-    if ($null -ne $item.ProxyEnable) { $enabled = [int]$item.ProxyEnable -eq 1 }
+  if ($item) {
+    $enabled = ($item.ProxyEnable -as [int]) -eq 1
     $server = [string]$item.ProxyServer
   }
   $looksLocal = $server -match '(?i)(127\.0\.0\.1|localhost):\d+'
