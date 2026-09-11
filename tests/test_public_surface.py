@@ -65,6 +65,11 @@ def main() -> None:
         ROOT / "docs" / "variant-throne-cursor-only.md",
         ROOT / "skills" / "happ-extra-whitelist2" / "SKILL.md",
         ROOT / "skills" / "throne-cursor-only-public" / "README.md",
+        ROOT / "skills" / "throne-cursor-only-public" / "SKILL.md",
+        ROOT / "skills" / "throne-cursor-only-public" / "reference.md",
+        ROOT / "skills" / "throne-cursor-only-public" / "docs" / "cursor-http-proxy.md",
+        ROOT / "skills" / "throne-cursor-only-public" / "docs" / "pitfalls.md",
+        ROOT / "skills" / "throne-cursor-only-public" / "docs" / "research-cursor-http-proxy.md",
         ROOT / "SECURITY.md",
         ROOT / "README.md",
     ]
