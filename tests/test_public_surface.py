@@ -159,6 +159,43 @@ def main() -> None:
     if "local" not in autoconnect_doc.lower() or "official" not in autoconnect_doc.lower():
         fail("autoconnect.md must separate official headers from local happ://connect")
 
+    if "## Apply on a live Windows session" not in autoconnect_doc:
+        fail("autoconnect.md: missing live-session apply section")
+    if "## Field check" not in autoconnect_doc:
+        fail("autoconnect.md: missing Field check section")
+    if "field-verified" not in autoconnect_doc.lower():
+        fail("autoconnect.md: missing field-verified logon nudge")
+    if not re.search(r"do\s+(\*\*)?not(\*\*)?\s+fire", autoconnect_doc, re.I):
+        fail("autoconnect.md: must say do not fire happ://connect on a healthy live tunnel")
+    if "ProxyEnable" not in autoconnect_doc:
+        fail("autoconnect.md: must mention ProxyEnable as the live System Proxy example")
+    if "Happ Proxy Autoconnect Nudge" not in autoconnect_doc:
+        fail("autoconnect.md: must name the delayed logon nudge task")
+    if "WinDivert" not in autoconnect_doc:
+        fail("autoconnect.md: must note competing WinDivert/TUN hijacks as a generic pitfall")
+
+    if "live session" not in set_ac.lower() or "ProxyEnable" not in set_ac:
+        fail("Set-HappAutoconnect.ps1 must document live-session soft-apply (ProxyEnable)")
+    if "do not fire" not in set_ac.lower() and "skip immediate" not in set_ac.lower():
+        fail("Set-HappAutoconnect.ps1 must say not to fire immediate happ://connect on a healthy tunnel")
+
+    if "optional" not in soft_c.lower():
+        fail("Invoke-HappSoftConnect.ps1 must warn that connect is optional when the tunnel is already healthy")
+    if "already healthy" not in soft_c.lower() and "already up" not in soft_c.lower():
+        fail("Invoke-HappSoftConnect.ps1 must warn when the tunnel already looks up")
+    if "-Force" not in soft_c:
+        fail("Invoke-HappSoftConnect.ps1 must offer -Force when the operator knows the tunnel is down")
+
+    if "live session" not in skill.lower():
+        fail("SKILL.md: missing live-session apply pointer")
+    if "field-check" not in skill.lower() and "already tunneled" not in skill.lower():
+        fail("SKILL.md: missing live-session vs reboot field-check pointer")
+    if "live session" not in readme.lower():
+        fail("README.md: missing live-session apply pointer")
+    ru_readme = readme.split("Русский", 1)[-1]
+    if "живой" not in ru_readme.lower() and "уже поднят" not in ru_readme.lower():
+        fail("README.md RU: missing live-session apply pointer")
+
     print("PASS public surface gates")
 
 
